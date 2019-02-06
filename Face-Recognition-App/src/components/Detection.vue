@@ -9,7 +9,7 @@
 
     <div class="row mb-3">
       <div style="height: 450px" class="col-md-4 offset-md-1">
-        <table v-if="faceDetails" class="table table-hover table-dark">
+        <table v-if="faceDetails" class="table table-borderless bg-info">
           <thead>
             <tr>
               <th scope="col">Key</th>
@@ -42,17 +42,33 @@
       </div>
       <button class="btn btn-info col-md-3 pt-2 pb-2 offset-md-1" @click="detect">Detect</button>
     </div>
+
+    <div v-if="progress > 0 && progress < 100" class="progress mt-2">
+      <div
+        class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+        role="progressbar"
+        aria-valuenow="75"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        :style="{width: progress + '%'}"
+      ></div>
+    </div>
   </div>
 </template>
 <script>
 import { storage } from "../db/firebase.js";
-import { setImageUrl, getFaceDetails } from "./../detection.js";
+import {
+  setImageUrl,
+  getFaceDetails,
+  setSubscriptionKey
+} from "./../detection.js";
 export default {
   data() {
     return {
       image: null,
       imageURL: null,
-      faceDetails: null
+      faceDetails: null,
+      progress: 0
     };
   },
   methods: {
@@ -65,24 +81,32 @@ export default {
       console.log(this.image);
     },
     detect() {
+      this.faceDetails = null;
       if (!this.imageURL) return alert("Image not set");
 
+      this.progress = 20;
       console.log(storage);
       var storageRef = storage().ref();
       var imageRef = storageRef.child("images/image.jpg");
 
       imageRef.put(this.image).then(snapshot => {
+        this.progress = 45;
         imageRef.getDownloadURL().then(url => {
+          this.progress = 75;
           setImageUrl(url);
+          this.progress = 95;
           getFaceDetails(data => {
             this.analyzeResults(data);
+            this.deleteImage(imageRef);
           });
         });
       });
     },
     analyzeResults(data) {
-      if (!data || !data.length)
+      if (!data || data.length == 2) {
+        this.progress = 100;
         return alert("no face detected, try another photo");
+      }
 
       data = JSON.parse(data);
 
@@ -104,13 +128,25 @@ export default {
 
       let age = data[0].faceAttributes.age;
       let gender = data[0].faceAttributes.gender;
-
+      this.progress = 100;
       this.faceDetails = {
         age,
         gender,
         averageEmotion
       };
+    },
+    deleteImage(imageRef) {
+      imageRef.delete().then(response => console.log(response));
     }
+  },
+  created() {
+    this.$http
+      .get(
+        "https://face-detection-api-f17be.firebaseio.com/meta/keys/subscriptionKey.json"
+      )
+      .then(response => {
+        setSubscriptionKey(response.body);
+      });
   }
 };
 </script>

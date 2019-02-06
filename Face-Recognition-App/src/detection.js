@@ -1,6 +1,6 @@
 import request from 'request';
 
-const subscriptionKey = '5827d53414524d6e8918ad41ad7bb7f8';
+var subscriptionKey;
 
 const uriBase =
   'https://westcentralus.api.cognitive.microsoft.com/face/v1.0/detect';
@@ -17,15 +17,7 @@ const params = {
     'emotion,hair,makeup,occlusion,accessories,blur,exposure,noise'
 };
 
-const options = {
-  uri: uriBase,
-  qs: params,
-  body: '{"url": ' + '"' + imageUrl + '"}',
-  headers: {
-    'Content-Type': 'application/json',
-    'Ocp-Apim-Subscription-Key': subscriptionKey
-  }
-};
+var options;
 
 const setImageUrl = function(imageUrl) {
   options.body = '{"url": ' + '"' + imageUrl + '"}';
@@ -39,4 +31,17 @@ const getFaceDetails = function(callback) {
   });
 };
 
-export { setImageUrl, getFaceDetails };
+const setSubscriptionKey = function(value) {
+  subscriptionKey = value;
+  options = {
+    uri: uriBase,
+    qs: params,
+    body: '{"url": ' + '"' + imageUrl + '"}',
+    headers: {
+      'Content-Type': 'application/json',
+      'Ocp-Apim-Subscription-Key': subscriptionKey
+    }
+  };
+};
+
+export { setImageUrl, getFaceDetails, setSubscriptionKey };

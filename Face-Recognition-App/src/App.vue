@@ -55,7 +55,7 @@ body {
 .overlay {
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65));
+  background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(51, 199, 224, 0.3));
   z-index: 1;
 }
 

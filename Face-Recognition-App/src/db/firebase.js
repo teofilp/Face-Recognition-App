@@ -8,6 +8,8 @@ var config = {
 };
 firebase.initializeApp(config);
 
-var storage = firebase.storage;
+export const storage = firebase.storage;
 
-export { storage };
+export const deleteImage = function(imageRef) {
+  return imageRef.delete();
+};
